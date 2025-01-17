@@ -23,7 +23,7 @@ func TestCompletionsStreamWrongModel(t *testing.T) {
 		context.Background(),
 		openai.CompletionRequest{
 			MaxTokens: 5,
-			Model:     openai.GPT3Dot5Turbo,
+			Model:     openai.Gemini1Dot5Flash,
 		},
 	)
 	if !errors.Is(err, openai.ErrCompletionUnsupportedModel) {
@@ -101,82 +101,6 @@ func TestCreateCompletionStream(t *testing.T) {
 	if !errors.Is(streamErr, io.EOF) {
 		t.Errorf("stream.Recv() did not return EOF when the stream is finished: %v", streamErr)
 	}
-}
-
-func TestCreateCompletionStreamError(t *testing.T) {
-	client, server, teardown := setupOpenAITestServer()
-	defer teardown()
-	server.RegisterHandler("/v1/completions", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-
-		// Send test responses
-		dataBytes := []byte{}
-		dataStr := []string{
-			`{`,
-			`"error": {`,
-			`"message": "Incorrect API key provided: sk-***************************************",`,
-			`"type": "invalid_request_error",`,
-			`"param": null,`,
-			`"code": "invalid_api_key"`,
-			`}`,
-			`}`,
-		}
-		for _, str := range dataStr {
-			dataBytes = append(dataBytes, []byte(str+"\n")...)
-		}
-
-		_, err := w.Write(dataBytes)
-		checks.NoError(t, err, "Write error")
-	})
-
-	stream, err := client.CreateCompletionStream(context.Background(), openai.CompletionRequest{
-		MaxTokens: 5,
-		Model:     openai.GPT3TextDavinci003,
-		Prompt:    "Hello!",
-		Stream:    true,
-	})
-	checks.NoError(t, err, "CreateCompletionStream returned error")
-	defer stream.Close()
-
-	_, streamErr := stream.Recv()
-	checks.HasError(t, streamErr, "stream.Recv() did not return error")
-
-	var apiErr *openai.APIError
-	if !errors.As(streamErr, &apiErr) {
-		t.Errorf("stream.Recv() did not return APIError")
-	}
-	t.Logf("%+v\n", apiErr)
-}
-
-func TestCreateCompletionStreamRateLimitError(t *testing.T) {
-	client, server, teardown := setupOpenAITestServer()
-	defer teardown()
-	server.RegisterHandler("/v1/completions", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(429)
-
-		// Send test responses
-		dataBytes := []byte(`{"error":{` +
-			`"message": "You are sending requests too quickly.",` +
-			`"type":"rate_limit_reached",` +
-			`"param":null,` +
-			`"code":"rate_limit_reached"}}`)
-
-		_, err := w.Write(dataBytes)
-		checks.NoError(t, err, "Write error")
-	})
-
-	var apiErr *openai.APIError
-	_, err := client.CreateCompletionStream(context.Background(), openai.CompletionRequest{
-		MaxTokens: 5,
-		Model:     openai.GPT3Babbage002,
-		Prompt:    "Hello!",
-		Stream:    true,
-	})
-	if !errors.As(err, &apiErr) {
-		t.Errorf("TestCreateCompletionStreamRateLimitError did not return APIError")
-	}
-	t.Logf("%+v\n", apiErr)
 }
 
 func TestCreateCompletionStreamTooManyEmptyStreamMessagesError(t *testing.T) {

@@ -6,11 +6,8 @@ import (
 )
 
 const (
-	openaiAPIURLv1                 = "https://api.openai.com/v1"
+	openaiAPIURLv1                 = "https://generativelanguage.googleapis.com/v1beta/openai/"
 	defaultEmptyMessagesLimit uint = 300
-
-	azureAPIPrefix         = "openai"
-	azureDeploymentsPrefix = "deployments"
 )
 
 type APIType string

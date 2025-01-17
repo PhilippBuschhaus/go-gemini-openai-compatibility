@@ -19,7 +19,7 @@ func Example() {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: openai.Gemini1Dot5Flash,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
@@ -42,7 +42,7 @@ func ExampleClient_CreateChatCompletionStream() {
 	stream, err := client.CreateChatCompletionStream(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:     openai.GPT3Dot5Turbo,
+			Model:     openai.Gemini1Dot5Flash,
 			MaxTokens: 20,
 			Messages: []openai.ChatCompletionMessage{
 				{
@@ -74,57 +74,6 @@ func ExampleClient_CreateChatCompletionStream() {
 		}
 
 		fmt.Println(response.Choices[0].Delta.Content)
-	}
-}
-
-func ExampleClient_CreateCompletion() {
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	resp, err := client.CreateCompletion(
-		context.Background(),
-		openai.CompletionRequest{
-			Model:     openai.GPT3Babbage002,
-			MaxTokens: 5,
-			Prompt:    "Lorem ipsum",
-		},
-	)
-	if err != nil {
-		fmt.Printf("Completion error: %v\n", err)
-		return
-	}
-	fmt.Println(resp.Choices[0].Text)
-}
-
-func ExampleClient_CreateCompletionStream() {
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
-	stream, err := client.CreateCompletionStream(
-		context.Background(),
-		openai.CompletionRequest{
-			Model:     openai.GPT3Babbage002,
-			MaxTokens: 5,
-			Prompt:    "Lorem ipsum",
-			Stream:    true,
-		},
-	)
-	if err != nil {
-		fmt.Printf("CompletionStream error: %v\n", err)
-		return
-	}
-	defer stream.Close()
-
-	for {
-		var response openai.CompletionResponse
-		response, err = stream.Recv()
-		if errors.Is(err, io.EOF) {
-			fmt.Println("Stream finished")
-			return
-		}
-
-		if err != nil {
-			fmt.Printf("Stream error: %v\n", err)
-			return
-		}
-
-		fmt.Printf("Stream response: %#v\n", response)
 	}
 }
 
@@ -273,7 +222,7 @@ func Example_chatbot() {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
+		Model: openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,
@@ -309,7 +258,7 @@ func ExampleDefaultAzureConfig() {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: openai.Gemini1Dot5Flash,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,

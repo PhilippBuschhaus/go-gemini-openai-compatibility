@@ -36,7 +36,7 @@ func main() {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: openai.Gemini1Dot5Flash,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
@@ -88,7 +88,7 @@ func main() {
 	ctx := context.Background()
 
 	req := openai.ChatCompletionRequest{
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		MaxTokens: 20,
 		Messages: []openai.ChatCompletionMessage{
 			{
@@ -415,7 +415,7 @@ func main() {
 		resp, err := client.CreateChatCompletion(
 			context.Background(),
 			openai.ChatCompletionRequest{
-				Model:    openai.GPT3Dot5Turbo,
+				Model:    openai.Gemini1Dot5Flash,
 				Messages: messages,
 			},
 		)
@@ -463,7 +463,7 @@ func main() {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
+			Model: openai.Gemini1Dot5Flash,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,

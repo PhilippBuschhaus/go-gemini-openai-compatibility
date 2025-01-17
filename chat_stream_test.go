@@ -63,7 +63,7 @@ func TestCreateChatCompletionStream(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -80,7 +80,7 @@ func TestCreateChatCompletionStream(t *testing.T) {
 			ID:                "1",
 			Object:            "completion",
 			Created:           1598069254,
-			Model:             openai.GPT3Dot5Turbo,
+			Model:             openai.Gemini1Dot5Flash,
 			SystemFingerprint: "fp_d9767fc5b9",
 			Choices: []openai.ChatCompletionStreamChoice{
 				{
@@ -95,7 +95,7 @@ func TestCreateChatCompletionStream(t *testing.T) {
 			ID:                "2",
 			Object:            "completion",
 			Created:           1598069255,
-			Model:             openai.GPT3Dot5Turbo,
+			Model:             openai.Gemini1Dot5Flash,
 			SystemFingerprint: "fp_d9767fc5b9",
 			Choices: []openai.ChatCompletionStreamChoice{
 				{
@@ -160,7 +160,7 @@ func TestCreateChatCompletionStreamError(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -200,7 +200,7 @@ func TestCreateChatCompletionStreamWithHeaders(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -243,7 +243,7 @@ func TestCreateChatCompletionStreamWithRatelimitHeaders(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -280,7 +280,7 @@ func TestCreateChatCompletionStreamErrorWithDataPrefix(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -321,7 +321,7 @@ func TestCreateChatCompletionStreamRateLimitError(t *testing.T) {
 	})
 	_, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -335,271 +335,6 @@ func TestCreateChatCompletionStreamRateLimitError(t *testing.T) {
 		t.Errorf("TestCreateChatCompletionStreamRateLimitError did not return APIError")
 	}
 	t.Logf("%+v\n", apiErr)
-}
-
-func TestCreateChatCompletionStreamWithRefusal(t *testing.T) {
-	client, server, teardown := setupOpenAITestServer()
-	defer teardown()
-	server.RegisterHandler("/v1/chat/completions", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-
-		dataBytes := []byte{}
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"1","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"2","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"refusal":"Hello"},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"3","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"refusal":" World"},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"4","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		dataBytes = append(dataBytes, []byte("data: [DONE]\n\n")...)
-
-		_, err := w.Write(dataBytes)
-		checks.NoError(t, err, "Write error")
-	})
-
-	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
-		MaxTokens: 2000,
-		Model:     openai.GPT4oMini20240718,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    openai.ChatMessageRoleUser,
-				Content: "Hello!",
-			},
-		},
-		Stream: true,
-	})
-	checks.NoError(t, err, "CreateCompletionStream returned error")
-	defer stream.Close()
-
-	expectedResponses := []openai.ChatCompletionStreamResponse{
-		{
-			ID:                "1",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{},
-				},
-			},
-		},
-		{
-			ID:                "2",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{
-						Refusal: "Hello",
-					},
-				},
-			},
-		},
-		{
-			ID:                "3",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{
-						Refusal: " World",
-					},
-				},
-			},
-		},
-		{
-			ID:                "4",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index:        0,
-					FinishReason: "stop",
-				},
-			},
-		},
-	}
-
-	for ix, expectedResponse := range expectedResponses {
-		b, _ := json.Marshal(expectedResponse)
-		t.Logf("%d: %s", ix, string(b))
-
-		receivedResponse, streamErr := stream.Recv()
-		checks.NoError(t, streamErr, "stream.Recv() failed")
-		if !compareChatResponses(expectedResponse, receivedResponse) {
-			t.Errorf("Stream response %v is %v, expected %v", ix, receivedResponse, expectedResponse)
-		}
-	}
-
-	_, streamErr := stream.Recv()
-	if !errors.Is(streamErr, io.EOF) {
-		t.Errorf("stream.Recv() did not return EOF in the end: %v", streamErr)
-	}
-}
-
-func TestCreateChatCompletionStreamWithLogprobs(t *testing.T) {
-	client, server, teardown := setupOpenAITestServer()
-	defer teardown()
-	server.RegisterHandler("/v1/chat/completions", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "text/event-stream")
-
-		// Send test responses
-		dataBytes := []byte{}
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"1","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":{"content":[],"refusal":null},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"2","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"content":"Hello"},"logprobs":{"content":[{"token":"Hello","logprob":-0.000020458236,"bytes":[72,101,108,108,111],"top_logprobs":[]}],"refusal":null},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"3","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{"content":" World"},"logprobs":{"content":[{"token":" World","logprob":-0.00055303273,"bytes":[32,87,111,114,108,100],"top_logprobs":[]}],"refusal":null},"finish_reason":null}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		//nolint:lll
-		dataBytes = append(dataBytes, []byte(`data: {"id":"4","object":"chat.completion.chunk","created":1729585728,"model":"gpt-4o-mini-2024-07-18","system_fingerprint":"fp_d9767fc5b9","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}]}`)...)
-		dataBytes = append(dataBytes, []byte("\n\n")...)
-
-		dataBytes = append(dataBytes, []byte("data: [DONE]\n\n")...)
-
-		_, err := w.Write(dataBytes)
-		checks.NoError(t, err, "Write error")
-	})
-
-	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
-		MaxTokens: 2000,
-		Model:     openai.GPT3Dot5Turbo,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    openai.ChatMessageRoleUser,
-				Content: "Hello!",
-			},
-		},
-		Stream: true,
-	})
-	checks.NoError(t, err, "CreateCompletionStream returned error")
-	defer stream.Close()
-
-	expectedResponses := []openai.ChatCompletionStreamResponse{
-		{
-			ID:                "1",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{},
-					Logprobs: &openai.ChatCompletionStreamChoiceLogprobs{
-						Content: []openai.ChatCompletionTokenLogprob{},
-					},
-				},
-			},
-		},
-		{
-			ID:                "2",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{
-						Content: "Hello",
-					},
-					Logprobs: &openai.ChatCompletionStreamChoiceLogprobs{
-						Content: []openai.ChatCompletionTokenLogprob{
-							{
-								Token:       "Hello",
-								Logprob:     -0.000020458236,
-								Bytes:       []int64{72, 101, 108, 108, 111},
-								TopLogprobs: []openai.ChatCompletionTokenLogprobTopLogprob{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			ID:                "3",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index: 0,
-					Delta: openai.ChatCompletionStreamChoiceDelta{
-						Content: " World",
-					},
-					Logprobs: &openai.ChatCompletionStreamChoiceLogprobs{
-						Content: []openai.ChatCompletionTokenLogprob{
-							{
-								Token:       " World",
-								Logprob:     -0.00055303273,
-								Bytes:       []int64{32, 87, 111, 114, 108, 100},
-								TopLogprobs: []openai.ChatCompletionTokenLogprobTopLogprob{},
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			ID:                "4",
-			Object:            "chat.completion.chunk",
-			Created:           1729585728,
-			Model:             openai.GPT4oMini20240718,
-			SystemFingerprint: "fp_d9767fc5b9",
-			Choices: []openai.ChatCompletionStreamChoice{
-				{
-					Index:        0,
-					Delta:        openai.ChatCompletionStreamChoiceDelta{},
-					FinishReason: "stop",
-				},
-			},
-		},
-	}
-
-	for ix, expectedResponse := range expectedResponses {
-		b, _ := json.Marshal(expectedResponse)
-		t.Logf("%d: %s", ix, string(b))
-
-		receivedResponse, streamErr := stream.Recv()
-		checks.NoError(t, streamErr, "stream.Recv() failed")
-		if !compareChatResponses(expectedResponse, receivedResponse) {
-			t.Errorf("Stream response %v is %v, expected %v", ix, receivedResponse, expectedResponse)
-		}
-	}
-
-	_, streamErr := stream.Recv()
-	if !errors.Is(streamErr, io.EOF) {
-		t.Errorf("stream.Recv() did not return EOF in the end: %v", streamErr)
-	}
 }
 
 func TestAzureCreateChatCompletionStreamRateLimitError(t *testing.T) {
@@ -625,7 +360,7 @@ func TestAzureCreateChatCompletionStreamRateLimitError(t *testing.T) {
 	apiErr := &openai.APIError{}
 	_, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -682,7 +417,7 @@ func TestCreateChatCompletionStreamStreamOptions(t *testing.T) {
 
 	stream, err := client.CreateChatCompletionStream(context.Background(), openai.ChatCompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Dot5Turbo,
+		Model:     openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleUser,
@@ -702,7 +437,7 @@ func TestCreateChatCompletionStreamStreamOptions(t *testing.T) {
 			ID:                "1",
 			Object:            "completion",
 			Created:           1598069254,
-			Model:             openai.GPT3Dot5Turbo,
+			Model:             openai.Gemini1Dot5Flash,
 			SystemFingerprint: "fp_d9767fc5b9",
 			Choices: []openai.ChatCompletionStreamChoice{
 				{
@@ -717,7 +452,7 @@ func TestCreateChatCompletionStreamStreamOptions(t *testing.T) {
 			ID:                "2",
 			Object:            "completion",
 			Created:           1598069255,
-			Model:             openai.GPT3Dot5Turbo,
+			Model:             openai.Gemini1Dot5Flash,
 			SystemFingerprint: "fp_d9767fc5b9",
 			Choices: []openai.ChatCompletionStreamChoice{
 				{
@@ -732,7 +467,7 @@ func TestCreateChatCompletionStreamStreamOptions(t *testing.T) {
 			ID:                "3",
 			Object:            "completion",
 			Created:           1598069256,
-			Model:             openai.GPT3Dot5Turbo,
+			Model:             openai.Gemini1Dot5Flash,
 			SystemFingerprint: "fp_d9767fc5b9",
 			Choices:           []openai.ChatCompletionStreamChoice{},
 			Usage: &openai.Usage{

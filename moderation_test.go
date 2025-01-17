@@ -34,7 +34,7 @@ func TestModerationsWithDifferentModelOptions(t *testing.T) {
 		expect error
 	}
 	modelOptions = append(modelOptions,
-		getModerationModelTestOption(openai.GPT3Dot5Turbo, openai.ErrModerationInvalidModel),
+		getModerationModelTestOption(openai.Gemini1Dot5Flash, openai.ErrModerationInvalidModel),
 		getModerationModelTestOption(openai.ModerationTextStable, nil),
 		getModerationModelTestOption(openai.ModerationTextLatest, nil),
 		getModerationModelTestOption(openai.ModerationOmni20240926, nil),

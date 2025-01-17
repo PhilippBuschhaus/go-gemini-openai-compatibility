@@ -25,7 +25,7 @@ func TestCompletionsWrongModel(t *testing.T) {
 		context.Background(),
 		openai.CompletionRequest{
 			MaxTokens: 5,
-			Model:     openai.GPT3Dot5Turbo,
+			Model:     openai.Gemini1Dot5Flash,
 		},
 	)
 	if !errors.Is(err, openai.ErrCompletionUnsupportedModel) {

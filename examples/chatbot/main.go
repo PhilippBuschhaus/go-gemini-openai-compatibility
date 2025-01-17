@@ -13,7 +13,7 @@ func main() {
 	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT3Dot5Turbo,
+		Model: openai.Gemini1Dot5Flash,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role:    openai.ChatMessageRoleSystem,

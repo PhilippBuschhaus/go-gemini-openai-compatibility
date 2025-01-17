@@ -13,7 +13,7 @@ func main() {
 	resp, err := client.CreateCompletion(
 		context.Background(),
 		openai.CompletionRequest{
-			Model:     openai.GPT3Babbage002,
+			Model:     openai.Gemini1Dot5Flash,
 			MaxTokens: 5,
 			Prompt:    "Lorem ipsum",
 		},
