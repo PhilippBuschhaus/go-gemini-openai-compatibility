@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/sashabaranov/go-openai"
+	openai "github.com/PhilippBuschhaus/go-gemini-openai-compatibility"
 )
 
 func Example() {
