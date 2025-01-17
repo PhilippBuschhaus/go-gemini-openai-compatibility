@@ -25,12 +25,16 @@ var (
 // GPT3 Models are designed for text-based tasks. For code-specific
 // tasks, please refer to the Codex series of models.
 const (
-	Gemini1Dot5Flash = "gemini-1.5-flash"
+	Gemini1Dot5Flash    = "gemini-1.5-flash"
+	Gemini2Dot0FlashExp = "gemini-2.0-flash-exp"
+	Gemini1Dot5Pro      = "gemini-1.5-pro"
 )
 
 var disabledModelsForEndpoints = map[string]map[string]bool{
 	"/completions": {
-		Gemini1Dot5Flash: true,
+		Gemini1Dot5Flash:    true,
+		Gemini2Dot0FlashExp: true,
+		Gemini1Dot5Pro:      true,
 	},
 	chatCompletionsSuffix: {},
 }
