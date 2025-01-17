@@ -25,7 +25,7 @@ var (
 // GPT3 Models are designed for text-based tasks. For code-specific
 // tasks, please refer to the Codex series of models.
 const (
-	Gemini1Dot5Flash = "o1-mini"
+	Gemini1Dot5Flash = "gemini-1.5-flash"
 )
 
 var disabledModelsForEndpoints = map[string]map[string]bool{
